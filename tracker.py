@@ -6,6 +6,24 @@ import copy
 matplotlib.use('Qt5Agg')
 import numpy
 from scipy.ndimage import label
+
+#ПРОВЕРИТЬ .toml файл
+#17.04 new function
+def create_tracker_by_name(tracker_name):
+    if tracker_name == "KCF":
+        return cv2.legacy.TrackerKCF_create()
+    elif tracker_name == "BOOSTING":
+        return cv2.legacy.TrackerBoosting_create()
+    elif tracker_name == "MIL":
+        return cv2.legacy.TrackerMIL_create()
+    elif tracker_name == "TLD":
+        return cv2.legacy.TrackerTLD_create()
+    elif tracker_name == "MEDIAN_FLOW":
+        return cv2.legacy.TrackerMedianFlow_create()
+    else:
+        raise ValueError("Invalid tracker name")
+
+
 exit = False
 while not exit:
     cap1 = cv2.VideoCapture('tracking.mp4')
@@ -17,7 +35,7 @@ while not exit:
              cv2.imshow('ORIGINAL', frame1)
              cv2.moveWindow("ORIGINAL", 0, 0)
              # handle keys
-             key = cv2.waitKey(0) & 0xFF
+             key = cv2.waitKey(1) & 0xFF
              if key == ord('d'):
                  ret1, frame1 = cap1.read()
              elif key == ord('q'):
@@ -42,20 +60,22 @@ while not exit:
     cv2.destroyWindow("Select region")
     cv2.destroyWindow("ORIGINAL")
     # init kcf tracker
+#17.04 new trackers
     trackers = {
-        "KCF": cv2.TrackerKCF_create(),
-        "BOOSTING": cv2.TrackerBoosting_create(),
-        "MIL": cv2.TrackerMIL_create(),
-        "TLD": cv2.TrackerTLD_create(),
-        "MEDIAN_FLOW": cv2.TrackerMedianFlow_create(),
+        "KCF": create_tracker_by_name("KCF"),
+        "BOOSTING": create_tracker_by_name("BOOSTING"),
+        "MIL": create_tracker_by_name("MIL"),
+        "TLD": create_tracker_by_name("TLD"),
+        "MEDIAN_FLOW": create_tracker_by_name("MEDIAN_FLOW"),
     }
+
     status = [trackers[k].init(frame1, region) for k in trackers]
     if not all(status):
         print('ERROR')
         quit()
-    coord = [region for i in range(0, 5)] 
-    draw_coord = [region for i in range(0, 5)] 
-    isWorking = [True for i in range(0, 5)] 
+    coord = [region for i in range(0, 5)]
+    draw_coord = [region for i in range(0, 5)]
+    isWorking = [True for i in range(0, 5)]
     ####
 
     exit = False
@@ -97,9 +117,9 @@ while not exit:
             if key == ord('d'):
                 ret1, frame1 = cap1.read()
             elif key == ord('q'):
-                exit = True 
+                exit = True
                 break
         if exit:
-            break        
+            break
 cap1.release()
 cv2.destroyAllWindows()
