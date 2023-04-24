@@ -53,7 +53,7 @@ def select_roi(cap):
     cv2.destroyWindow("Select region")
     cv2.destroyWindow("ORIGINAL")
 
-    return region
+    return frame, region  # Return both frame and region
 
 def initialize_trackers(frame, region):
     trackers = {
@@ -83,7 +83,7 @@ def track_objects(cap, trackers):
             break
 
         for idx, (name, tracker) in enumerate(trackers.items()):
-            if isWorking[idx]:
+            if isWorking[idx] and tracker is not None:  # Check if tracker is not None
                 ret, temp_coord = tracker.update(frame)
                 if ret:
                     draw_coord[idx] = temp_coord
@@ -92,15 +92,16 @@ def track_objects(cap, trackers):
                     isWorking[idx] = False
 
             for idx, (name, _) in enumerate(trackers.items()):
-                if isWorking[idx]:
+                if isWorking[idx] and tracker is not None:  # Check if tracker is not None
                     p1 = (int(coord[idx][0]), int(coord[idx][1]))
                     p2 = (int(coord[idx][0] + coord[idx][2]), int(coord[idx][1] + coord[idx][3]))
                     cv2.rectangle(frame, p1, p2, (0, 255, 0), 2, 1)
                     cv2.putText(frame, name, (p1[0], p1[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
 
-            cv2.imshow('FRAME', frame)
-            key = cv2.waitKey(1) & 0
-
+        cv2.imshow('FRAME', frame)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
 
 if __name__ == "__main__":
     cap = cv2.VideoCapture('tracking.mp4')
@@ -109,6 +110,7 @@ if __name__ == "__main__":
     if exit:
         quit()
 
-    region = select_roi(cap)
-    trackers = initialize_trackers(region)
+    frame, region = select_roi(cap)  # Unpack frame and region
+    trackers = initialize_trackers(frame, region)  # Pass both frame and region
     track_objects(cap, trackers)
+
