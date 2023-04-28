@@ -1,3 +1,3 @@
 # tracker
- 
-In this script OpenCV uses BOOSTING, MIL, KCF, TLD, MEDIANFLOW trackers.
+
+pet-project: BOOSTING, MIL, KCF, TLD, MEDIANFLOW algos to be tested.
