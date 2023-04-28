@@ -1,6 +1,6 @@
 import cv2
-import numpy as np
 
+# Function to create tracker instances by their names
 def create_tracker_by_name(tracker_name):
     available_trackers = {
         "KCF": cv2.TrackerKCF_create,
@@ -25,6 +25,7 @@ def create_tracker_by_name(tracker_name):
 
     return tracker
 
+# Function to play the original video
 def play_original_video(cap):
     exit = False
     while not exit:
@@ -43,6 +44,7 @@ def play_original_video(cap):
             break
     return exit
 
+# Function to select the region of interest (ROI)
 def select_roi(cap):
     ret, frame = cap.read()
     if not ret:
@@ -64,34 +66,7 @@ def select_roi(cap):
 
     return frame, region  # Return both frame and region
 
-def initialize_trackers(frame, region):
-    trackers = {
-        k: create_tracker_by_name(k)
-        for k in ["KCF", "BOOSTING", "MIL", "TLD", "MEDIAN_FLOW"]
-    }
-
-    print(f"Created trackers: {trackers}")
-
-    status = {}
-    for k, tracker in trackers.items():
-        if tracker is None:
-            status[k] = False
-            print(f"Warning: {k} tracker not available.")
-            continue
-
-        try:
-            status[k] = tracker.init(frame, region)
-        except Exception as e:
-            status[k] = False
-            print(f"ERROR: {k} tracker failed to initialize. Reason: {e}")
-
-        if not status[k]:
-            print(f"ERROR: {k} tracker not initialized.")
-
-    print(f"Tracker initialization status: {status}")
-
-    return trackers
-
+# Function to initialize tracker instances with the selected ROI
 def initialize_trackers(frame, region):
     trackers = {
         k: create_tracker_by_name(k)
@@ -116,7 +91,7 @@ def initialize_trackers(frame, region):
 
     return trackers
 
-
+# Function to track objects using the initialized trackers
 def track_objects(cap, trackers):
     coord = [region for _ in range(len(trackers))]
     draw_coord = [region for _ in range(len(trackers))]
@@ -129,8 +104,9 @@ def track_objects(cap, trackers):
         if frame is None:
             break
 
+        # Update and draw each tracker on the frame
         for idx, (name, tracker) in enumerate(trackers.items()):
-            if isWorking[idx] and tracker is not None:  # Check if tracker is not None
+            if isWorking[idx] and tracker is not None:
                 ret, temp_coord = tracker.update(frame)
                 if ret:
                     draw_coord[idx] = temp_coord
@@ -140,7 +116,7 @@ def track_objects(cap, trackers):
                     print(f"{name} tracker failed to update.")
 
             for idx, (name, _) in enumerate(trackers.items()):
-                if isWorking[idx] and tracker is not None:  # Check if tracker is not None
+                if isWorking[idx] and tracker is not None:
                     p1 = (int(coord[idx][0]), int(coord[idx][1]))
                     p2 = (int(coord[idx][0] + coord[idx][2]), int(coord[idx][1] + coord[idx][3]))
                     cv2.rectangle(frame, p1, p2, (0, 255, 0), 2, 1)
